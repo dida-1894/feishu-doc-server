@@ -1,0 +1,42 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    block content
+    div#login_container
+    a#login_link 点击登录跳转飞书
+  
+  script(src="https://sf3-cn.feishucdn.com/obj/feishu-static/lark/passport/qrcode/LarkSSOSDKWebQRCode-1.0.2.js") 
+  script.
+    // 在这里编写 JavaScript 代码
+    window.onload = function() {
+      const handleMessage = (event) => {
+        const loginTmpCode = event.data;
+        const origin = event.origin; 
+        console.log('============> handleMessage',QRLoginObj?.current?.matchOrigin(origin), event)
+    
+        if( QRLoginObj?.current?.matchOrigin(origin) ) {
+          console.log('============> match')
+          // 若存在 code 则为已扫码或者已授权状态，不做重定向--坑点
+          if (window.location.search.indexOf('code') !== -1) return;
+          window.location.href = `${goto.current}&tmp_code=${loginTmpCode}`;
+        }
+      };
+      window.addEventListener('message', handleMessage, false);
+
+      const redirectUri = `http://43.163.244.2:3121/login`;//重定向地址，需在管理后台进行配置
+      const clientId = 'cli_a497a513bce3100d'
+      const goto = `https://passport.feishu.cn/suite/passport/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=STATE`
+      const QRLoginObj = window.QRLogin({
+        id: 'login_container',
+        goto: goto,
+        width: '250',
+        height: '250',
+      });
+
+      document.querySelector('#login_link').setAttribute('href', goto)
+
+      
+    };
